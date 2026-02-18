@@ -38,12 +38,12 @@ export default function EventsAdmin() {
     const r = await fetch("/api/admin/events");
     if (!r.ok) throw new Error("load failed");
     const j = await r.json();
-    setItems(j.items);
+    setItems(j.items || []);
     setSelectedId(j.items?.[0]?.id ?? null);
   }
 
   useEffect(() => {
-    if (session) load();
+    if (session) void load();
   }, [session]);
 
   if (!session) {
@@ -76,7 +76,6 @@ export default function EventsAdmin() {
   }
 
   async function save() {
-    // pulizia: se endDate/image sono stringhe vuote, le togliamo (così restano opzionali)
     const cleaned = items.map((e) => {
       const copy: any = { ...e };
       if (!copy.endDate || String(copy.endDate).trim() === "") delete copy.endDate;
@@ -90,8 +89,7 @@ export default function EventsAdmin() {
       body: JSON.stringify(cleaned)
     });
 
-    if (!r.ok) alert("Errore salvataggio (commit)");
-    else alert("Salvato! Ora Vercel redeploya il sito.");
+    alert(r.ok ? "Salvato! Deploy in corso." : "Errore salvataggio (commit)");
   }
 
   return (
@@ -182,3 +180,46 @@ export default function EventsAdmin() {
               Display date (testo) — es: 23 Gennaio 2026<br />
               <input
                 value={selected.displayDate}
+                onChange={(e) => updateSelected({ displayDate: e.target.value })}
+                style={{ width: "100%" }}
+              />
+            </label>
+            <br />
+            <br />
+
+            <label>
+              Location<br />
+              <input
+                value={selected.location}
+                onChange={(e) => updateSelected({ location: e.target.value })}
+                style={{ width: "100%" }}
+              />
+            </label>
+            <br />
+            <br />
+
+            <label>
+              Description<br />
+              <textarea
+                value={selected.description}
+                onChange={(e) => updateSelected({ description: e.target.value })}
+                style={{ width: "100%", height: 120 }}
+              />
+            </label>
+            <br />
+            <br />
+
+            <label>
+              Image URL (opzionale)<br />
+              <input
+                value={selected.image ?? ""}
+                onChange={(e) => updateSelected({ image: e.target.value })}
+                style={{ width: "100%" }}
+              />
+            </label>
+          </>
+        )}
+      </section>
+    </main>
+  );
+}
